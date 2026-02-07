@@ -31,8 +31,11 @@
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
+;; `load-theme' function.
+;;
+;; Default: doom-one
+;; Other options: doom-manegarm, doom-sorcerer, and doom gruvbox
+(setq doom-theme 'doom-gruvbox)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -42,6 +45,9 @@
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
 
+;; 2026-02-04
+;; Start the server - in particular to do org-capture with a shell script
+(server-start)
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -87,38 +93,42 @@
 (after! core-fonts
   (set-fontset-font t 'symbol "Noto Sans Symbols" nil 'prepend))
 
-;; 2025-03-26
-;; Turn off auto-complete popups in org mode - I don't need autocomplete for English
-(after! org
-  (add-hook! 'org-mode-hook
-    (corfu-mode -1)))
-
+;; 2026-01-08 - Disabled due to this breaking LSP in general
 ;; 2025-03-28 - Github actions support
 ;;
 ;; Requires: npm install -g yaml-language-server
-(after! lsp-yaml
-  (add-to-list 'lsp-yaml-schema-store
-               '("https://json.schemastore.org/github-worflow.json" . "/.github/workflows/*.yml")))
+;;(after! lsp-yaml
+;;  (add-to-list 'lsp-yaml-schema-store
+;;               '("https://json.schemastore.org/github-worflow.json" . "/.github/workflows/*.yml")))
 
 ;; Extra config for github workflows
-(add-hook! 'yaml-mode-hook
-           (when (and buffer-file-name
-                      (string-match-p "github/worflows" buffer-file-name))
-             (setq-local indent-tabs-mode nil)
-             (setq-local yaml-indent-offset 2)))
+;;(add-hook! 'yaml-mode-hook
+;;           (when (and buffer-file-name
+;;                      (string-match-p "github/worflows" buffer-file-name))
+;;             (setq-local indent-tabs-mode nil)
+;;             (setq-local yaml-indent-offset 2)))
 
+;; 2026-01-06 - Needed to explicitly include homebrew path for aspell
 ;; 2025-03-28 - Spell check
+;; 
 ;; Requires brew install aspell
-(setq ispell-program-name "aspell")
+(when (eq system-type 'darwin)
+  (setq ispell-program-name "/opt/homebrew/bin/aspell"))
 (setq ispell-dictionary "en_US")
 
 ;; Enable in text-modes
 (add-hook! '(test-mode-hook markdown-mode-hook org-mode-hook)
            #'flyspell-mode)
 
-;; Enable in commments in code
+;; Enable in comments in code
 (add-hook! '(prog-mode-hook)
            #'flyspell-prog-mode)
+
+;; 2025-03-26
+;; Turn off auto-complete popups in org mode - I don't need autocomplete for English
+(after! org
+  (add-hook! 'org-mode-hook
+    (corfu-mode -1)))
 
 ;; 2025-05-08 Simplify org todo sequences
 (after! org
@@ -134,8 +144,7 @@
            "DONE(d)" ;; Completed
            "OBYE(o)" ;; Overcome by events
            "CNCL(c)") ;; Cancelled)
-          )))
-(after! org
+          ))
   (setq org-todo-keyword-faces
         '(("STRT" . +org-todo-active)
           ("WAIT" . +org-todo-onhold)
@@ -144,6 +153,49 @@
           ("CNCL" . +org-todo-cancel)
           )
         ))
+
+;; 2026-01-26 Change org header font-face sizes
+(after! org
+  (set-face-attribute 'org-level-1 nil
+                      :height 1.3
+                      :weight 'bold
+                      :box `(:line-width 10 :color ,(face-background 'default))
+                      )
+  )
+
+;; 2026-02-02 Fix the missing arrows from the third level!
+(after! org
+  (setq org-modern-fold-stars
+        '(("▶" . "▼") ("▷" . "▽") ("⏵" . "⏷") ("▹" . "▿") ("▸" . "▾"))))
+
+;; 2026-02-04 Setup a default org capture to use with a shortcut
+;;
+;; Shortcut script is in ~/bin/org-capture.sh
+(after! org
+  (setq org-capture-templates
+        '(("t" "Todo" entry (file+headline "~/Documents/StratOps/Tasks.org" "Inbox")
+           "* TODO %?\n  %U\n  %a  \n  %i")
+          ("x" "Todo" entry (file+headline "~/Documents/StratOps/Tasks.org" "Inbox")
+           "* TODO %?\n  %U\n  %(shell-command-to-string \"pbpaste\")\n")))
+  ;; Put new items at the top of the list
+  (setq org-reverse-note-order t))
+
+
+;; 2026-01-26 Remove keybindings from company so arrows don't interact with
+;; autocomplete popups
+(after! company
+  (setq company-active-map (make-sparse-keymap))
+  (define-key company-active-map (kbd "TAB") 'company-complete-selection)
+  (define-key company-active-map (kbd "<tab>") 'company-complete-selection)
+  (define-key company-active-map (kbd "RET") nil)
+  (define-key company-active-map (kbd "<return>") nil))
+
+;; 2026-01-08 Trying to enable tree-sitter for python
+;;(after! tree-sitter
+;;  (global-tree-sitter-mode)
+;;  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+;;  (add-hook 'python-mode-hook #'tree-sitter-mode))
+
 
 ;; Commented 2025-10-20 when switching to ECA
 ;; 2025-07-07 Configure Copilot tab-completion

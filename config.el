@@ -95,7 +95,8 @@
 ;; 2026-06-22
 ;; Fix monospace font in mac
 ;; brew install --cask font-jetbrains-mono
-(setq doom-font (font-spec :family "JetBrains Mono" :size 12))
+(when (eq system-type 'darwin)
+  (setq doom-font (font-spec :family "JetBrains Mono" :size 12)))
 
 ;; 2025-04-09
 ;; Fix symbols for org-modern
@@ -237,12 +238,13 @@
 (require 'agent-shell-attention)
 
 ;; Copy environment variables from emacs process
-(setq agent-shell-anthropic-claude-environment
-      (agent-shell-make-environment-variables
-       "CLAUDE_CODE_USE_VERTEX" "1"
-       "CLOUD_ML_REGION" "global"
-       "ANTHROPIC_VERTEX_PROJECT_ID" "viasat-claude-code"
-       :inherit-env t))
+(when (eq system-type 'darwin)
+  (setq agent-shell-anthropic-claude-environment
+        (agent-shell-make-environment-variables
+         "CLAUDE_CODE_USE_VERTEX" "1"
+         "CLOUD_ML_REGION" "global"
+         "ANTHROPIC_VERTEX_PROJECT_ID" "viasat-claude-code"
+         :inherit-env t)))
 
 (setopt agent-shell-attention-render-function
         #'agent-shell-attention-render-active)

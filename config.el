@@ -3,6 +3,11 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
+;;(when (eq system-type 'darwin)
+;;  (setenv "CC" "/opt/homebrew/bin/gcc-16")
+;;  (setenv "CXX" "/opt/homebrew/bin/g++-16")
+;;  (setenv "FC" "/opt/homebrew/bin/gfortran-16")
+;;  (add-to-list 'exec-path "/opt/homebrew/bin"))
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
@@ -86,6 +91,12 @@
 (when (eq system-type 'darwin)
   (setq mac-command-modifier 'meta
         mac-option-modifier 'super))
+
+;; 2026-06-22
+;; Fix monospace font in mac
+;; brew install --cask font-jetbrains-mono
+(when (eq system-type 'darwin)
+  (setq doom-font (font-spec :family "JetBrains Mono" :size 12)))
 
 ;; 2025-04-09
 ;; Fix symbols for org-modern
@@ -219,3 +230,25 @@
 ;;  (map! :map copilot-chat-mode-map
 ;;        :n "C-c C-c" #'copilot-chat-send
 ;;        :n "C-c C-r" #'copilot-chat-reset))        
+
+
+;; 2026-06-22 agent-shell
+(require 'acp)
+(require 'agent-shell)
+(require 'agent-shell-attention)
+
+;; Copy environment variables from emacs process
+(when (eq system-type 'darwin)
+  (setq agent-shell-anthropic-claude-environment
+        (agent-shell-make-environment-variables
+         "CLAUDE_CODE_USE_VERTEX" "1"
+         "CLOUD_ML_REGION" "global"
+         "ANTHROPIC_VERTEX_PROJECT_ID" "viasat-claude-code"
+         :inherit-env t)))
+
+(setopt agent-shell-attention-render-function
+        #'agent-shell-attention-render-active)
+(setopt agent-shell-attention-indicator-location 'global-mode-string)
+(setopt agent-shell-attention-show-zeros t)
+(agent-shell-attention-mode 1)
+      

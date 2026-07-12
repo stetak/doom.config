@@ -59,3 +59,15 @@
 ;;(package! copilot-chat
 ;;  :recipe (:host github :repo "chep/copilot-chat.el"))
 
+;; 2026-06-22 - https://github.com/xenodium/agent-shell
+;;(package! shell-maker
+;;  :recipe (:local-repo "~/sandbox/emacs-shell-maker"))
+(package! shell-maker
+  :recipe (:host github :repo "xenodium/shell-maker"))
+(package! acp)
+;;(package! agent-shell
+;;  :recipe (:local-repo "~/sandbox/emacs-agent-shell"))
+(package! agent-shell
+  :recipe (:host github :repo "xenodium/agent-shell"))
+(package! agent-shell-attention
+  :recipe (:host github :repo "ultronozm/agent-shell-attention.el"))
